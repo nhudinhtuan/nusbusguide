@@ -1,0 +1,32 @@
+1,Blk E3A,546,1752
+2,Museum,826,1567
+3,Raffles Hall,670,1635
+4,Yusof Ishak House,1027,1984
+5,Opp Yusof Ishak House,972,1958
+6,Central Library,714,2394
+7,Computer Centre,708,2281
+8,LT13,313,2795
+9,Ventus (Opp LT13),280,2677
+10,Eusoff Hall,267,2964
+11,Temasek Hall,528,3122
+12,Blk AS7,541,3010
+13,COM2,896,2880
+14,Opp Hon Sui Sen Memorial Library,1160,3095
+15,BIZ2,1133,3053
+16,House 12,1525,3026
+17,Opp House 12,1513,2963
+18,Bet House 14 & 15,1658,3107
+19,House 7,1638,3049
+20,PGP Terminal,2104,3241
+21,LT 29,2209,2297
+22,Blk S17,2230,2255
+23,University Hall,1711,2306
+24,Opp University Hall,1615,2216
+25,Opp University Health Centre,1215,2043
+26,University Health Centre,1302,1994
+27,University Town,1069,1098
+28,Kent Ridge MRT Station,2882,2796
+29,Opp Kent Ridge MRT Station,2937,2764 
+30,NUH,2694,2510
+31,Opp NUH,2684,2411
+32,South Bouna Vista,2897,3166

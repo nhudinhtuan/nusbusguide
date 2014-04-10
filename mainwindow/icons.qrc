@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>images/busstop_blue.png</file>
+        <file>images/busstop_selected.png</file>
+        <file>images/closeButton.png</file>
+        <file>images/bus.png</file>
+    </qresource>
+    <qresource prefix="/static">
+        <file>staticdata/busstops.txt</file>
+        <file>staticdata/routes.txt</file>
+    </qresource>
+</RCC>
