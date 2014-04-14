@@ -18,6 +18,8 @@ public:
 
 private:
     void createShape();
+    void updateShapeFromLastStop(int lastStopId);
+    void updateShape(int fromloc);
 
     Route *model_;
     QPen pen_;

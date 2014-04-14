@@ -8,6 +8,23 @@ MainWindow::MainWindow(QWidget *parent) :
     ui_->setupUi(this);
     setWindowTitle("NUS BUS GUIDE");
     ui_->leftWidget->setVisible(false);
+    QWidget* titleWidget = new QWidget(this);
+    ui_->leftWidget->setTitleBarWidget(titleWidget);
+    ui_->busTable->horizontalHeader()->setStretchLastSection(true);
+    //ui_->busTable->horizontalHeader()->resizeSection(0, 60);
+    //ui_->busTable->horizontalHeader()->resizeSection(1, 90);
+    ui_->busTable->verticalHeader()->setVisible(false);
+    ui_->busTable->setIconSize(QSize(80, 24));
+    ui_->stopsTable->horizontalHeader()->resizeSection(0, 40);
+    ui_->stopsTable->horizontalHeader()->resizeSection(1, 160);
+    ui_->stopsTable->horizontalHeader()->setStretchLastSection(true);
+    ui_->stopsTable->setIconSize(QSize(23, 23));
+    ui_->stopsTable->verticalHeader()->setVisible(false);
+
+    QList<int> sizes;
+    sizes << 100 << 400;
+    ui_->splitter->setSizes(sizes);
+
     scene_ = new QGraphicsScene(this);
     mapView_ = new MapGraphicsView(scene_, ui_->mapWidget);
 
@@ -23,6 +40,10 @@ MainWindow::MainWindow(QWidget *parent) :
     busPopUp_ = new BusStopPopUp(this);
     busPopUp_->hide();
     timer_ = new QTimer(this);
+    selectedRoute_ = 0;
+    selectedBusstop_ = 0;
+    dispatchingBusId_ = 0;
+    selectedBusId_ = 0;
 
     initConnect();
     initLoading();
@@ -45,10 +66,21 @@ void MainWindow::initConnect() {
     connect(dataManager_, SIGNAL(requestCreateGBusStop(BusStop*)), this, SLOT(createGBusStop(BusStop*)), Qt::QueuedConnection);
     connect(dataManager_, SIGNAL(requestCreateGRoute(Route*)), this, SLOT(createGRoute(Route*)), Qt::QueuedConnection);
     connect(dataManager_, SIGNAL(requestUpdateBus(Bus*)), this, SLOT(updateGBus(Bus*)), Qt::QueuedConnection);
+    connect(dataManager_, SIGNAL(requestUpdateMapView()), this, SLOT(refreshMapView()), Qt::QueuedConnection);
+    connect(dataManager_, SIGNAL(requestUpdateBusStopInfo(BusStopInfo*)), this, SLOT(updateBusstopInfo(BusStopInfo*)), Qt::QueuedConnection);
+    connect(dataManager_, SIGNAL(finishDispatching(int, bool)), this, SLOT(finishDispatching(int, bool)), Qt::QueuedConnection);
     connect(scene_, SIGNAL(selectionChanged()), this, SLOT(selectItem()), Qt::QueuedConnection);
     connect(busPopUp_, SIGNAL(closeSig()), scene_, SLOT(clearSelection()));
     connect(timer_, SIGNAL(timeout()), this, SLOT(requestDynamicData()), Qt::QueuedConnection);
-    connect(ui_->actionA2, SIGNAL(triggered()), this, SLOT(leftTrigger()));
+    connect(ui_->actionA1Route, SIGNAL(triggered(bool)), this, SLOT(toggleA1Panel(bool)));
+    connect(ui_->actionA2Route, SIGNAL(triggered(bool)), this, SLOT(toggleA2Panel(bool)));
+    connect(ui_->actionD1Route, SIGNAL(triggered(bool)), this, SLOT(toggleD1Panel(bool)));
+    connect(ui_->actionD2Route, SIGNAL(triggered(bool)), this, SLOT(toggleD2Panel(bool)));
+    connect(ui_->busTable, SIGNAL(cellClicked(int, int)), this, SLOT(busTableCellClicked(int,int)));
+    connect(ui_->busTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(busTableCellDoubleClicked(int,int)));
+    connect(ui_->busTable, SIGNAL(itemSelectionChanged()), this, SLOT(busTableSelectedChanged()));
+    connect(ui_->stopsTable, SIGNAL(cellClicked(int,int)), this, SLOT(stopTableCellClicked(int,int)));
+    connect(ui_->busroutetoggle, SIGNAL(clicked(bool)), this, SLOT(toggleGRoute(bool)));
 }
 
 void MainWindow::initLoading() {
@@ -56,21 +88,228 @@ void MainWindow::initLoading() {
     dataManager_->addTask(LOAD_ROUTES);
 }
 
-void MainWindow::showLeft() {
-    ui_->leftWidget->setVisible(true);
-}
-
-void MainWindow::hideLeft() {
-    ui_->leftWidget->setVisible(false);
-}
-
-void MainWindow::leftTrigger() {
-    if (ui_->leftWidget->isVisible()) {
-        ui_->leftWidget->setVisible(false);
-        gRoute_->setVisible(false);
-    } else {
+void MainWindow::toggleA1Panel(bool checked) {
+    if (checked) {
+        ui_->actionA2Route->setChecked(false);
+        ui_->actionD1Route->setChecked(false);
+        ui_->actionD2Route->setChecked(false);
+        ui_->routeLabel->setText("A1 BUS SERVICE");
+        showRouteInfo(1);
         ui_->leftWidget->setVisible(true);
-        gRoute_->setVisible(true);
+    } else {
+        gRoutes_[1]->setVisible(false);
+        selectedRoute_ = 0;
+        selectedBusId_ = 0;
+        ui_->leftWidget->setVisible(false);
+    }
+}
+
+void MainWindow::toggleA2Panel(bool checked) {
+    if (checked) {
+        ui_->actionA1Route->setChecked(false);
+        ui_->actionD1Route->setChecked(false);
+        ui_->actionD2Route->setChecked(false);
+        ui_->routeLabel->setText("A2 BUS SERVICE");
+        showRouteInfo(2);
+        ui_->leftWidget->setVisible(true);
+    } else {
+        ui_->leftWidget->setVisible(false);
+        selectedRoute_ = 0;
+        selectedBusId_ = 0;
+    }
+}
+
+void MainWindow::toggleD1Panel(bool checked) {
+    if (checked) {
+        ui_->actionA1Route->setChecked(false);
+        ui_->actionA2Route->setChecked(false);
+        ui_->actionD2Route->setChecked(false);
+        ui_->routeLabel->setText("D1 BUS SERVICE");
+        showRouteInfo(3);
+        ui_->leftWidget->setVisible(true);
+    } else {
+        ui_->leftWidget->setVisible(false);
+        selectedRoute_ = 0;
+        selectedBusId_ = 0;
+    }
+}
+
+void MainWindow::toggleD2Panel(bool checked) {
+    if (checked) {
+        ui_->actionA1Route->setChecked(false);
+        ui_->actionA2Route->setChecked(false);
+        ui_->actionD1Route->setChecked(false);
+        ui_->routeLabel->setText("D2 BUS SERVICE");
+        showRouteInfo(4);
+        ui_->leftWidget->setVisible(true);
+    } else {
+        ui_->leftWidget->setVisible(false);
+        selectedRoute_ = 0;
+        selectedBusId_ = 0;
+    }
+}
+
+void MainWindow::showRouteInfo(int routeId) {
+    if (routeId == 0) return;
+
+    if (routeId != selectedRoute_) {
+        ui_->busTable->setRowCount(0);
+    }
+
+    //show gRoute
+    if (gRoutes_.contains(routeId) && ui_->busroutetoggle->isChecked()) {
+        /*
+        if (selectedBusId_ > 0 && gBuses_.contains(selectedBusId_)) {
+            int lastStopId = gBuses_[selectedBusId_]->lastStopId();
+
+        }*/
+        gRoutes_[routeId]->setVisible(true);
+    }
+
+    int rowCount = 0;
+    QHash<int, GBus*>::iterator it = gBuses_.begin();
+    while (it != gBuses_.end()) {
+        if (it.value()->getRouteId() == routeId) {
+            if (routeId != selectedRoute_) {
+                ui_->busTable->insertRow(rowCount);
+            }
+
+            QTableWidgetItem *cell = new QTableWidgetItem(it.value()->getName());
+            cell->setData(Qt::UserRole, it.value()->getId());
+            ui_->busTable->setItem(rowCount, 0, cell);
+            if (!it.value()->isRunning()) {
+                cell = new QTableWidgetItem("_");
+                cell->setTextAlignment(Qt::AlignCenter);
+                ui_->busTable->setItem(rowCount, 1, cell);
+
+                if (dispatchingBusId_ == it.value()->getId()) {
+                    cell = new QTableWidgetItem("sending...");
+                } else {
+                    cell = new QTableWidgetItem();
+                    QImage dispatchBut(":/icons/images/dispatch.png");
+                    cell->setSizeHint(QSize(80, 24));
+                    cell->setIcon(QIcon(QPixmap::fromImage(dispatchBut)));
+                }
+                ui_->busTable->setItem(rowCount, 2, cell);
+            } else {
+                cell = new QTableWidgetItem(QString::number(it.value()->getOccupancy()));
+                cell->setTextAlignment(Qt::AlignCenter);
+                ui_->busTable->setItem(rowCount, 1, cell);
+                cell = new QTableWidgetItem("");
+                cell->setTextAlignment(Qt::AlignCenter);
+                ui_->busTable->setItem(rowCount, 2, cell);
+                if (dispatchingBusId_ == it.value()->getId()) {
+                    // release
+                    dispatchingBusId_ = 0;
+                }
+            }
+            rowCount++;
+        }
+        it++;
+    }
+
+
+    // show bus stops
+
+    if (selectedRoute_ != routeId) {
+        Route* route = staticData_->getRoute(routeId);
+        if (route) {
+            QList<BusStopRoute>& busstops = route->busstops;
+            ui_->stopsTable->setRowCount(busstops.size());
+            QTableWidgetItem *cell = 0;
+            for (int i = 0; i < busstops.size(); i++) {
+                cell = new QTableWidgetItem();
+                QImage dispatchBut(":/icons/images/busstop_blue.png");
+                cell->setSizeHint(QSize(23, 23));
+                cell->setIcon(QIcon(QPixmap::fromImage(dispatchBut)));
+                cell->setData(Qt::UserRole, busstops.at(i).busstopId);
+                ui_->stopsTable->setItem(i, 0, cell);
+
+                QString name = staticData_->getBusStopName(busstops.at(i).busstopId);
+                ui_->stopsTable->setItem(i, 1, new QTableWidgetItem(name));
+                QString time = "+" + QString::number(busstops.at(i).time)+" min";
+                ui_->stopsTable->setItem(i, 2, new QTableWidgetItem(time));
+            }
+        }
+    }
+
+
+    if (selectedBusId_) {
+        // transparent
+    }
+
+    selectedRoute_ = routeId;
+}
+
+void MainWindow::busTableCellClicked(int row, int column) {
+    if (column == 0) {
+        QTableWidgetItem *item = ui_->busTable->item(row, column);
+        int busId = item->data(Qt::UserRole).toInt();
+        GBus *gBus = gBuses_[busId];
+        if (gBus->isRunning()) {
+            mapView_->centerOn(gBus);
+        }
+    }
+}
+
+void MainWindow::busTableCellDoubleClicked(int row, int column) {
+    if (column == 2) {
+        QTableWidgetItem *item = ui_->busTable->item(row, 0);
+        int busId = item->data(Qt::UserRole).toInt();
+        QPoint pos = gBuses_[busId]->getPos();
+        if (pos.x() == 0 && pos.y() == 0) {
+            dispatchingBusId_ = busId;
+            QTableWidgetItem *cell = new QTableWidgetItem("sending...");
+            ui_->busTable->setItem(row, column, cell);
+            dataManager_->addTask(DISPATCH_BUS, busId);
+            qDebug() << "dispatch x" << dispatchingBusId_;
+        }
+    }
+}
+
+void MainWindow::busTableSelectedChanged() {
+    QList <QTableWidgetItem*> selectedItems = ui_->busTable->selectedItems();
+    if (selectedItems.size() > 0) {
+        QTableWidgetItem* item = selectedItems.at(0);
+        int column = ui_->busTable->column(item);
+        if (column==0) {
+            int busId = item->data(Qt::UserRole).toInt();
+            selectedBusId_ = busId;
+        } else {
+            selectedBusId_ = 0;
+        }
+    } else {
+        selectedBusId_ = 0;
+    }
+    showRouteInfo(selectedRoute_);
+}
+
+void MainWindow::stopTableCellClicked(int row, int column) {
+    if (column == 0) {
+        QTableWidgetItem *item = ui_->stopsTable->item(row, column);
+        int stopId = item->data(Qt::UserRole).toInt();
+        GBusStop *gBusstop = gBusstops_[stopId];
+        if (gBusstop) {
+            mapView_->centerOn(gBusstop);
+            gBusstop->setSelected(true);
+        }
+    }
+}
+
+void MainWindow::toggleGRoute(bool isVisible) {
+    if (selectedRoute_ && gRoutes_.contains(selectedRoute_)) {
+        gRoutes_[selectedRoute_]->setVisible(isVisible);
+    }
+}
+
+void MainWindow::refreshMapView() {
+    mapView_->viewport()->update();
+}
+
+void MainWindow::finishDispatching(int id, bool isOk) {
+    if (dispatchingBusId_ == id && !isOk) {
+        // if fails, no need to wait until it is dispatched
+        dispatchingBusId_ = 0;
     }
 }
 
@@ -81,11 +320,17 @@ void MainWindow::initTimer() {
 
 void MainWindow::requestDynamicData() {
     dataManager_->addTask(UPDATE_BUSES);
+    if (selectedBusstop_ > 0) {
+        dataManager_->addTask(LOAD_BUSSTOP_INFO, selectedBusstop_);
+    }
+    showRouteInfo(selectedRoute_);
 }
 
 void MainWindow::selectItem() {
     QList<QGraphicsItem*> selectedItems = scene_->selectedItems();
     if (selectedItems.isEmpty()) {
+        selectedBusstop_ = 0;
+        busPopUp_->hide();
         return;
     }
 
@@ -94,20 +339,43 @@ void MainWindow::selectItem() {
     GBusStop *gBusStop = dynamic_cast<GBusStop*>(gItem);
     if (gBusStop) {
         BusStop *model = gBusStop->getModel();
-        QString name = model->name + "[" + QString::number(model->id) + "]";
-        busPopUp_->displayStatic(name, mapView_->getMouseAnchor());
+        selectedBusstop_ = model->id;
+        QString name = model->name + " [" + QString::number(model->id) + "]";
+
+        QPoint busstopPos = mapView_->getMouseAnchor();
+        if (ui_->leftWidget->isVisible()) {
+            // left panel is opend
+            busstopPos.setX(width() - busPopUp_->width());
+            busstopPos.setY(busPopUp_->height());
+        } else {
+            // left panel is not opened
+            if (busstopPos.x() < busPopUp_->width()/2)
+                busstopPos.setX(busPopUp_->width()/2);
+            if (busstopPos.x() + busPopUp_->width()/2 > width())
+                busstopPos.setX(width() - busPopUp_->width()/2);
+            if (busstopPos.y() < busPopUp_->height())
+                busstopPos.setY(busPopUp_->height());
+        }
+        busPopUp_->displayStatic(name, busstopPos);
         busPopUp_->show();
         busPopUp_->raise();
+        // load busstop info
+        dataManager_->addTask(LOAD_BUSSTOP_INFO, model->id);
+    } else {
+        selectedBusstop_ = 0;
+        busPopUp_->hide();
     }
 }
 
 void MainWindow::createGBusStop(BusStop *model) {
     GBusStop *gBusstop = new GBusStop(0, model);
+    gBusstops_[model->id] = gBusstop;
     scene_->addItem(gBusstop);
 }
 
 void MainWindow::createGRoute(Route *model) {
-    gRoute_ = new GRoute(0, model);
+    GRoute *gRoute_ = new GRoute(0, model);
+    gRoutes_[model->id] = gRoute_;
     scene_->addItem(gRoute_);
 }
 
@@ -120,5 +388,12 @@ void MainWindow::updateGBus(Bus *model) {
         gBuses_[model->id] = gBus;
         scene_->addItem(gBus);
     }
-    mapView_->viewport()->update();
+}
+
+void MainWindow::updateBusstopInfo(BusStopInfo *info) {
+    if (selectedBusstop_ != info->id) {
+        delete info;
+    } else {
+        busPopUp_->showInfo(info);
+    }
 }

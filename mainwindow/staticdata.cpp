@@ -1,12 +1,9 @@
 #include "staticdata.h"
 
-StaticData::StaticData()
-{
-    initBusStop();
-    initRoutes();
+StaticData::StaticData() {
 }
 
-void StaticData::initBusStop() {
+void StaticData::loadBusSTop() {
     QFile file(":/static/staticdata/busstops.txt");
     if(!file.open(QIODevice::ReadOnly)) {
         qDebug() << "unable to read busstop file.";
@@ -16,12 +13,13 @@ void StaticData::initBusStop() {
     while(!in.atEnd()) {
         QString line = in.readLine();
         QStringList fields = line.split(",");
-        busStops_.append(new BusStop(fields[0].toInt(),fields[1], fields[2].toInt(),fields[3].toInt()));
+        int id = fields[0].toInt();
+        busStops_[id] = new BusStop(id,fields[1], fields[2].toInt(),fields[3].toInt());
     }
     file.close();
 }
 
-void StaticData::initRoutes() {
+void StaticData::loadRoutes() {
     QFile file(":/static/staticdata/routes.txt");
     if(!file.open(QIODevice::ReadOnly)) {
         qDebug() << "unable to read routes file.";
@@ -31,35 +29,39 @@ void StaticData::initRoutes() {
 
     QString line;
     QStringList fields;
+    Route *route = 0;
+    int pointInd = 0;
     while(!in.atEnd()) {
         line = in.readLine();
         fields = line.split(",");
-        Route *r = new Route(fields[0].toInt(), fields[1]);
-        int pointInd = 0;
-        while(!in.atEnd()) {
-            line = in.readLine();
-            if (line.isEmpty()) break;
-            fields = line.split(",");
-            if (fields.length() > 1) {
-                r->addPoint(fields[0].toInt(), fields[1].toInt());
-                pointInd++;
-            } else {
-                r->addStop(fields[0].toInt(), pointInd);
+        if (fields.size() == 1) {
+            // new route
+            if (route) {
+                routes_[route->id] = route;
             }
+            route = new Route(fields[0].toInt());
+            pointInd = 0;
+        } else if (fields.size() == 4) {
+            route->addBusStop(fields[0].toInt(), fields[1].toInt(), fields[2].toInt(), fields[3].toInt());
+            route->addStop(fields[0].toInt(), pointInd);
+        } else if (fields.size() == 2) {
+            route->addPoint(fields[0].toInt(), fields[1].toInt());
+            pointInd++;
         }
-        routes_.append(r);
     }
+    if (route)
+        routes_[route->id] = route;
     file.close();
-
-    qDebug() << "route count = " << routes_.length();
-    qDebug() << "point route 1 = " << routes_[0]->points.length();
-    qDebug() << "point[0] route 1 = " << routes_[0]->points.at(0);
 }
 
-QList<BusStop*>& StaticData::getBusStops() {
-    return busStops_;
+QList<BusStop*> StaticData::getBusStops() {
+    return busStops_.values();
 }
 
-QList<Route*>& StaticData::getRoutes() {
-    return routes_;
+QString StaticData::getBusStopName(int id) {
+    return busStops_[id]->name;
+}
+
+QList<Route*> StaticData::getRoutes() {
+    return routes_.values();
 }

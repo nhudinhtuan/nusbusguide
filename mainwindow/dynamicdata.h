@@ -11,7 +11,8 @@ class DynamicData
 public:
     DynamicData();
     QList<Bus*> getBusLocations();
-
+    BusStopInfo* getBusStopInfo(int id);
+    bool dispatchBus(int id);
 private:
     Communicator com_;
 };

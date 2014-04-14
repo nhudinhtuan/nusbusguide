@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QTimer>
+#include <QPushButton>
 #include <QHash>
 #include "graphicsview/mapgraphicsview.h"
 #include "datamanager.h"
@@ -28,11 +29,23 @@ private slots:
     void createGBusStop(BusStop *model);
     void createGRoute(Route *model);
     void updateGBus(Bus *model);
+    void updateBusstopInfo(BusStopInfo *info);
     void selectItem();
     void requestDynamicData();
-    void showLeft();
-    void hideLeft();
-    void leftTrigger();
+    void refreshMapView();
+    void finishDispatching(int id, bool isOk);
+
+    void toggleA1Panel(bool checked);
+    void toggleA2Panel(bool checked);
+    void toggleD1Panel(bool checked);
+    void toggleD2Panel(bool checked);
+    void showRouteInfo(int routeId);
+    void busTableCellClicked(int row, int column);
+    void busTableCellDoubleClicked(int row, int column);
+    void busTableSelectedChanged();
+
+    void stopTableCellClicked(int row, int column);
+    void toggleGRoute(bool isVisible);
 
 private:
     void initConnect();
@@ -50,7 +63,14 @@ private:
     //timer
     QTimer *timer_;
     QHash<int, GBus*> gBuses_;
-    GRoute *gRoute_;
+    QHash<int, GBusStop*> gBusstops_;
+    QHash<int, GRoute*> gRoutes_;
+
+    //current open left
+    int selectedRoute_;
+    int selectedBusstop_;
+    int dispatchingBusId_;
+    int selectedBusId_;
 };
 
 #endif // MAINWINDOW_H

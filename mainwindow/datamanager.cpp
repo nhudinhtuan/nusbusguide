@@ -2,14 +2,20 @@
 
 DataManager::DataManager(StaticData *staticData, DynamicData *dynamicData)
     : staticData_(staticData), dynamicData_(dynamicData){
-
+    busstopId_ = 0;
 }
 
-void DataManager::addTask(DataRequestType task) {
+void DataManager::addTask(DataRequestType task, int id) {
     tasksMutex_.lock();
     tasks_.enqueue(task);
     hasTask_.wakeAll();
     tasksMutex_.unlock();
+
+    if (task == LOAD_BUSSTOP_INFO) {
+        busstopId_ = id;
+    } else if (task == DISPATCH_BUS) {
+        dispatchBusId_ = id;
+    }
 }
 
 void DataManager::run() {
@@ -45,18 +51,26 @@ void DataManager::doTask(DataRequestType task) {
         case UPDATE_BUSES:
             updateBuses();
             break;
+        case LOAD_BUSSTOP_INFO:
+            loadBusStopInfo();
+            break;
+        case DISPATCH_BUS:
+            dispatchBus();
+            break;
     }
 }
 
 void DataManager::loadBusStops() {
-    QList<BusStop*>& list = staticData_->getBusStops();
+    staticData_->loadBusSTop();
+    QList<BusStop*> list = staticData_->getBusStops();
     for (int i = 0; i < list.size(); ++i) {
         emit requestCreateGBusStop(list.at(i));
     }
 }
 
 void DataManager::loadRoutes() {
-    QList<Route*>& list = staticData_->getRoutes();
+    staticData_->loadRoutes();
+    QList<Route*> list = staticData_->getRoutes();
     for (int i = 0; i < list.size(); ++i) {
         emit requestCreateGRoute(list.at(i));
     }
@@ -67,4 +81,17 @@ void DataManager::updateBuses() {
     for(int i = 0; i < buses.size(); i++) {
         emit requestUpdateBus(buses[i]);
     }
+    emit requestUpdateMapView();
+}
+
+void DataManager::loadBusStopInfo() {
+    BusStopInfo* busstopInfo = dynamicData_->getBusStopInfo(busstopId_);
+    emit requestUpdateBusStopInfo(busstopInfo);
+}
+
+void DataManager::dispatchBus() {
+    bool isOk = false;
+    if (dispatchBusId_ > 0)
+        isOk = dynamicData_->dispatchBus(dispatchBusId_);
+    emit finishDispatching(dispatchBusId_, isOk);
 }

@@ -2,6 +2,8 @@
 #define BUSSTOPPOPUP_H
 #include <QWidget>
 #include <QMouseEvent>
+#include <QDebug>
+#include "datastruct.h"
 
 namespace Ui {
 class BusStopPopUp;
@@ -14,6 +16,7 @@ class BusStopPopUp : public QWidget
 public:
     explicit BusStopPopUp(QWidget *parent = 0);
     void displayStatic(QString& name, QPoint pos);
+    void showInfo(BusStopInfo *);
     ~BusStopPopUp();
 
 signals:

@@ -4,6 +4,11 @@
         <file>images/busstop_selected.png</file>
         <file>images/closeButton.png</file>
         <file>images/bus.png</file>
+        <file>images/a2.png</file>
+        <file>images/d1.png</file>
+        <file>images/d2.png</file>
+        <file>images/a1.png</file>
+        <file>images/dispatch.png</file>
     </qresource>
     <qresource prefix="/static">
         <file>staticdata/busstops.txt</file>

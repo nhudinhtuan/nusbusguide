@@ -1,12 +1,21 @@
+#define DEFAULT_X_OFFSET 10
+#define DEFAULT_Y_OFFSET 5
 #include "gbus.h"
 
 GBus::GBus(QGraphicsItem *parent, Bus *model)
     : QGraphicsObject(parent), model_(model){
 
     setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setVisible(true);
-
+    setVisible(false);
+    annotation_ = new QGraphicsSimpleTextItem(this);
+    brush_.setStyle(Qt::SolidPattern);
+    brush_.setColor(Qt::black);
+    annotation_->setBrush(brush_);
     updatePos();
+}
+
+GBus::~GBus() {
+    delete annotation_;
 }
 
 void GBus::updateModel(Bus *model) {
@@ -14,19 +23,26 @@ void GBus::updateModel(Bus *model) {
         delete model_;
         model_ = model;
     }
-    updatePos();
+    if (model_->pos.x() == 0 && model_->pos.y() == 0) {
+        setVisible(false);
+    } else {
+        setVisible(true);
+        updatePos();
+    }
 }
 
 void GBus::updatePos() {
     image_ = QImage(":/icons/images/bus.png");
     rect_ = QRect(0, 0, 35, 23);
 
+    prepareGeometryChange();
     QTransform t;
-    t.rotate(model_->angle);
+    t.rotate(-1*model_->angle);
     rect_ = t.mapRect(rect_);
     image_ = image_.transformed(t, Qt::SmoothTransformation);
-
     rect_.moveCenter(model_->pos);
+    annotation_->setPos(model_->pos.x() + DEFAULT_X_OFFSET, model_->pos.y() + DEFAULT_Y_OFFSET);
+    //annotation_->setScale(50);
 }
 
 QRectF GBus::boundingRect() const {
@@ -37,7 +53,11 @@ void GBus::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     Q_UNUSED(option)
     Q_UNUSED(widget)
 
-    painter->drawImage(rect_.toRect(), image_);
+
+    if (isVisible()) {
+        painter->drawImage(rect_.toRect(), image_);
+        annotation_->setText(QString::number(model_->occupancy)+"%");
+    }
 }
 
 Bus* GBus::getModel() {

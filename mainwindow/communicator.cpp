@@ -3,7 +3,7 @@
 Communicator::Communicator() {
 
     // hard code the server
-    host_ = "http://localhost/cs3249/";
+    host_ = "http://nuditu.com/cs3249/index.php/";
 }
 
 void Communicator::requestData(QString url, bool& isOk, QString& result) {
@@ -14,6 +14,8 @@ void Communicator::requestData(QString url, bool& isOk, QString& result) {
     // the HTTP request
     QNetworkRequest req;
     req.setUrl(host_+url);
+
+    req.setRawHeader( "User-Agent" , "Mozilla Firefox" );
 
     QNetworkReply *reply = mgr.get(req);
     eventLoop.exec(); // blocks stack until "finished()" has been called

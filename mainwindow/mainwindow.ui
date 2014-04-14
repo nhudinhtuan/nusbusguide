@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>712</width>
-    <height>475</height>
+    <width>933</width>
+    <height>528</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,7 +50,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>712</width>
+     <width>933</width>
      <height>22</height>
     </rect>
    </property>
@@ -62,6 +62,12 @@
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>16777215</height>
+    </size>
+   </property>
    <property name="movable">
     <bool>false</bool>
    </property>
@@ -77,8 +83,11 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionA2"/>
+   <addaction name="actionA1Route"/>
+   <addaction name="actionA2Route"/>
    <addaction name="separator"/>
+   <addaction name="actionD1Route"/>
+   <addaction name="actionD2Route"/>
    <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -92,39 +101,169 @@
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
+   <widget class="QWidget" name="leftWidgetContents">
     <property name="enabled">
      <bool>true</bool>
     </property>
-    <layout class="QGridLayout" name="gridLayout_4">
+    <layout class="QGridLayout" name="gridLayout_2">
      <property name="leftMargin">
-      <number>0</number>
+      <number>5</number>
      </property>
      <property name="topMargin">
-      <number>0</number>
+      <number>5</number>
      </property>
      <property name="rightMargin">
-      <number>0</number>
+      <number>5</number>
      </property>
      <property name="bottomMargin">
-      <number>0</number>
+      <number>5</number>
      </property>
+     <item row="1" column="0">
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QTableWidget" name="busTable">
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::AdjustToContents</enum>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
+        <column>
+         <property name="text">
+          <string>ID</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Occupancy (%)</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Dispatch</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QTableWidget" name="stopsTable">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
+        <attribute name="horizontalHeaderStretchLastSection">
+         <bool>true</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string/>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Busstop</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Time</string>
+         </property>
+        </column>
+       </widget>
+      </widget>
+     </item>
      <item row="0" column="0">
-      <widget class="QStackedWidget" name="stackedWidget">
-       <widget class="QWidget" name="page"/>
-       <widget class="QWidget" name="page_2"/>
+      <widget class="QLabel" name="routeLabel">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QCheckBox" name="busroutetoggle">
+       <property name="text">
+        <string>hide bus route</string>
+       </property>
       </widget>
      </item>
     </layout>
    </widget>
   </widget>
-  <action name="actionA2">
+  <action name="actionA1Route">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/a1.png</normaloff>:/icons/images/a1.png</iconset>
+   </property>
    <property name="text">
+    <string>A1Route</string>
+   </property>
+   <property name="toolTip">
+    <string>A1</string>
+   </property>
+  </action>
+  <action name="actionA2Route">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/a2.png</normaloff>:/icons/images/a2.png</iconset>
+   </property>
+   <property name="text">
+    <string>a2Route</string>
+   </property>
+   <property name="toolTip">
     <string>A2</string>
+   </property>
+  </action>
+  <action name="actionD1Route">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/d1.png</normaloff>:/icons/images/d1.png</iconset>
+   </property>
+   <property name="text">
+    <string>d1Route</string>
+   </property>
+   <property name="toolTip">
+    <string>D1</string>
+   </property>
+  </action>
+  <action name="actionD2Route">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/d2.png</normaloff>:/icons/images/d2.png</iconset>
+   </property>
+   <property name="text">
+    <string>d2Route</string>
+   </property>
+   <property name="toolTip">
+    <string>D2</string>
    </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

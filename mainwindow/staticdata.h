@@ -14,15 +14,19 @@ class StaticData
 
 public:
     StaticData();
-    QList<BusStop*>& getBusStops();
-    QList<Route*>& getRoutes();
+    void loadBusSTop();
+    void loadRoutes();
+
+    QList<BusStop*> getBusStops();
+    QList<Route*> getRoutes();
+    QString getBusStopName(int id);
+
+    Route* getRoute(int id) { return routes_[id];}
 
 private:
-    void initBusStop();
-    void initRoutes();
 
-    QList<BusStop*> busStops_;
-    QList<Route*> routes_;
+    QHash<int, BusStop*> busStops_;
+    QHash<int, Route*> routes_;
 };
 
 #endif // STATICDATA_H
