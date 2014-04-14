@@ -3,7 +3,7 @@
 #include <QWidget>
 #include <QMouseEvent>
 #include <QDebug>
-#include "datastruct.h"
+#include "../datastruct.h"
 
 namespace Ui {
 class BusStopPopUp;

@@ -8,13 +8,13 @@ GRoute::GRoute(QGraphicsItem *parent, Route *model)
     pen_.setStyle(Qt::SolidLine);
 
     switch(model->id) {
-        case 1: pen_.setColor(QColor(0xFF, 0, 0, 0x90)); // A1
+        case 1: pen_.setColor(QColor(187, 7, 24, 0x90)); // A1
                 break;
-        case 2: pen_.setColor(QColor(0xFF, 0, 0, 0x90)); // A2
+        case 2: pen_.setColor(QColor(191, 185, 4, 0x90)); // A2
                 break;
-        case 3: pen_.setColor(QColor(0xFF, 0, 0, 0x90)); // D1
+        case 3: pen_.setColor(QColor(14, 114, 199, 0x90)); // D1
                 break;
-        case 4: pen_.setColor(QColor(0xFF, 0, 0, 0x90)); // D2
+        case 4: pen_.setColor(QColor(82, 157, 26, 0x90)); // D2
                 break;
     }
 

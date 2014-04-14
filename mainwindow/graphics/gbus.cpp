@@ -32,7 +32,19 @@ void GBus::updateModel(Bus *model) {
 }
 
 void GBus::updatePos() {
-    image_ = QImage(":/icons/images/bus.png");
+
+    switch (model_->routeId) {
+        case 1:  image_ = QImage(":/icons/images/busa1.png"); // a1
+                 break;
+        case 2:  image_ = QImage(":/icons/images/busa2.png"); // a2
+                 break;
+        case 3:  image_ = QImage(":/icons/images/busd1.png"); // d1
+                 break;
+        case 4:  image_ = QImage(":/icons/images/busd2.png"); // d2
+                 break;
+    }
+
+
     rect_ = QRect(0, 0, 35, 23);
 
     prepareGeometryChange();

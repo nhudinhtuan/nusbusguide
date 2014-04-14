@@ -39,7 +39,7 @@ private slots:
     void toggleA2Panel(bool checked);
     void toggleD1Panel(bool checked);
     void toggleD2Panel(bool checked);
-    void showRouteInfo(int routeId);
+    void showRouteInfo(bool rebuild);
     void busTableCellClicked(int row, int column);
     void busTableCellDoubleClicked(int row, int column);
     void busTableSelectedChanged();

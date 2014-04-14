@@ -193,7 +193,7 @@
      <item row="2" column="0">
       <widget class="QCheckBox" name="busroutetoggle">
        <property name="text">
-        <string>hide bus route</string>
+        <string>show the bus route</string>
        </property>
       </widget>
      </item>
