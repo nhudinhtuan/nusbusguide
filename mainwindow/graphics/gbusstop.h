@@ -5,7 +5,7 @@
 #include <QGraphicsObject>
 #include <QList>
 #include <QPainter>
-#include "datastruct.h"
+#include "../datastruct.h"
 
 class GBusStop : public QGraphicsObject
 {

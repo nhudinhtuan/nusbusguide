@@ -14,7 +14,6 @@ void Communicator::requestData(QString url, bool& isOk, QString& result) {
     // the HTTP request
     QNetworkRequest req;
     req.setUrl(host_+url);
-
     req.setRawHeader( "User-Agent" , "Mozilla Firefox" );
 
     QNetworkReply *reply = mgr.get(req);

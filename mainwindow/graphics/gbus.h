@@ -6,7 +6,7 @@
 #include <QList>
 #include <QPainter>
 #include <QGraphicsSimpleTextItem>
-#include "datastruct.h"
+#include "../datastruct.h"
 
 class GBus: public QGraphicsObject
 {

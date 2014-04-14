@@ -5,7 +5,7 @@
 #include <QGraphicsObject>
 #include <QList>
 #include <QPainter>
-#include "staticdata.h"
+#include "../staticdata.h"
 class GRoute: public QGraphicsObject
 {
     Q_OBJECT
